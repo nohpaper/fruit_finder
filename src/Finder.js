@@ -60,12 +60,16 @@ export default function Findex(){
 
   const [filtered,setFileterd] = useState([...fruits]);
   const [selected, setSelected] = useState({
-    season:['S', "w"],
+    season:[],
     origin:[],
     kcal:[],
   });
   useEffect(() => {
-
+    /* TODO::
+    *   1. kcal 일 경우 계산 필요
+    *   2. selected 내에 있는 값을 이용하여 filter 걸어서 p 태그에 노출
+    *
+    *  */
 /*    setFileterd(()=>{
       return fruits.filter((22)=>{22. === prev.})
     });*/
@@ -81,7 +85,6 @@ export default function Findex(){
     *
     * */
 
-
   }, [selected]);
 
   return (<div>
@@ -91,13 +94,30 @@ export default function Findex(){
           <p>{element.name}</p>
           {element.select.kind.map(function(child){
             return (<div>
-              <input type="checkbox" name={child.english} id={child.english} onClick={()=>{
+              <input type="checkbox" name={child.english} id={child.english} value={child.english} onClick={(event)=>{
                 //클릭 true면 selected에 값 추가
+                const targetValue = event.target.value;
+                const clickId = element.select.id;
+                const clickCategory = selected[clickId];
+                //const clickCategory = Object.entries(selected).find((filterEle)=>filterEle[0] === clickId); //이걸로 사용할 경우 clickCategory[1]
+
+                if(!clickCategory.includes(targetValue)){
+                  //clickCategory 에 없을 때
+                  clickCategory.push(targetValue);
+                  console.log(clickCategory, selected);
+                }else {
+                  //clickCategory 에 있을 때
+                  const findIndex = clickCategory.indexOf(targetValue); //target.value index 확인
+                  clickCategory.splice(findIndex, 1); //삭제
+                }
+
+                setSelected((prev)=> ({...selected, [clickId]: clickCategory}));
               }}/>
               <label htmlFor={child.english}>{child.korean}</label>
             </div>)
           })}
         </div>)
       })}
+      <p>{ }</p>
   </div>)
 }
