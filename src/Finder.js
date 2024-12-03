@@ -31,12 +31,18 @@ const setps = [
 
 export default function Findex(){
   const [filtered,setFiltered] = useState([...fruits]);
-/*  const [selected, setSelected] = useState({
+  const [result,setResult] = useState({
     season:[],
     origin:[],
     kcal:[],
-  });*/
-  const [selected, setSelected] = useState([
+    result:[],
+  });
+  const [selected, setSelected] = useState({
+    season:[],
+    origin:[],
+    kcal:[],
+  });
+/*  const [selected, setSelected] = useState([
     {
       order:undefined,
       id:"season",
@@ -52,7 +58,7 @@ export default function Findex(){
       id:"kcal",
       kind:[],
     },
-  ]);
+  ]);*/
   
   useEffect(()=>{
     //페이지 진입 시 fruits.kcal 부분 계산하여 filtered.kcal에 값 변경
@@ -64,8 +70,9 @@ export default function Findex(){
       } else if(element.kcal > 60) {
         return filtered[index].kcal = "more_than_60";
       }
-      return filtered;
+      return setFiltered([...filtered]);
     });
+    console.log(filtered);
     
   }, []);
   
@@ -114,7 +121,20 @@ export default function Findex(){
                 //클릭 true면 selected에 값 추가
                 const targetValue = event.target.value;
                 const clickId = element.select.id;
-                //const clickCategory = selected[clickId];
+                const clickCategory = selected[clickId];
+                //const clickCategory = Object.entries(selected).find((filterEle)=>filterEle[0] === clickId); //이걸로 사용할 경우 clickCategory[1]
+                if(!clickCategory.includes(targetValue)){
+                  //clickCategory 에 없을 때
+                  clickCategory.push(targetValue);
+                  console.log(clickCategory, selected);
+                }else {
+                  //clickCategory 에 있을 때
+                  const findIndex = clickCategory.indexOf(targetValue); //target.value index 확인
+                  clickCategory.splice(findIndex, 1); //삭제
+                }
+                setSelected((prev)=> ({...selected, [clickId]: clickCategory}));
+/*                const targetValue = event.target.value;
+                const clickId = element.select.id;
                 const clickCategory = selected.find((filterEle)=>filterEle.id === clickId);
                 
                 //console.log(clickCategory.kind.includes(targetValue), clickCategory)
@@ -127,21 +147,31 @@ export default function Findex(){
                   const findIndex = clickCategory.kind.indexOf(targetValue); //target.value index 확인
                   clickCategory.kind.splice(findIndex, 1); //삭제
                 }
-                //console.log("result",clickCategory.kind, selected);
-                
-                //setSelected((prevState)=>([{...selected, kind:clickCategory.kind[0]}]));
-                //setSelected((prevState)=>{});
-                console.log("clickCategory: ", clickCategory, "selected: ", selected);
+                //setSelected 에 어떻게 업로드할지 고민*/
               }}/>
               <label htmlFor={child.english}>{child.korean}</label>
             </div>)
           })}
         </div>)
       })}
+      <button type="button" onClick={()=>{
+        if(selected.season.length !== 0){
+          const update = selected.season.map(function(element){
+            const clickResult = filtered.filter((fruits) => fruits.season === element);
+            return [...clickResult];
+          });
+          update.map(function(element, index){
+            console.log(update[0]);
+          });
+          
+          setResult({ season: update[0].concat(update[1]) });
+          console.log("map out: ", update, update.concat(update))
+        }
+      }}>결과 확인!</button>
       <hr/>
       <h3>내가 고른 과일은?</h3>
       <p>
-      {filtered.map(function(element, index){
+      {result.season.map(function(element, index){
           return (<span key={index}>
             {`${index}. ${element.name} ` }
           </span>)
