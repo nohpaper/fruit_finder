@@ -23,7 +23,7 @@ const fruits = [
   {name:"바나나", season:["spring", "summer", "autumn", "winter"], origin:"imports", kcal:80},
 ];
 
-const setps = [
+const steps = [
   {name:"계절을 선택하세요", select:{id:"season", kind:[{korean:"봄", english:"spring"}, {korean:"여름", english:"summer"}, {korean:"가을", english:"autumn"}, {korean:"겨울", english:"winter"}]}},
   {name:"수입 or 국산을 선택하세요", select:{id:"origin", kind:[{korean:"국산", english:"domestic"}, {korean:"수입", english:"imports"}]}},
   {name:"칼로리를 선택하세요", select:{id:"kcal", kind:[{korean:"40미만", english:"less_than40"}, {korean:"40이상 60미만", english:"more_than40_and_less_than_60"}, {korean:"60이상", english:"more_than_60"}]}},
@@ -31,12 +31,12 @@ const setps = [
 
 export default function Findex(){
   const [filtered,setFiltered] = useState([...fruits]);
-  const [result,setResult] = useState({
-    season:[],
-    origin:[],
-    kcal:[],
-    result:[],
-  });
+  const [result,setResult] = useState([
+    {season:[],},
+    {origin:[],},
+    {kcal:[],},
+    //{result:[],},
+  ]);
   const [selected, setSelected] = useState({
     season:[],
     origin:[],
@@ -75,7 +75,8 @@ export default function Findex(){
     console.log(filtered);
     
   }, []);
-  
+
+
   useEffect(() => {
     /* TODO::
     *   1. 바나나같이 여러 계절이 있을 경우
@@ -83,36 +84,15 @@ export default function Findex(){
     *
     *  */
 
-    //console.log(Array.isArray(fruits[19].season)) 배열인지 확인하는 메서드
-    
-    //첫 선택이 season 일때 (origin, kcal은 0개 일 때)
-/*    if(selected.season.length !== 0 && selected.origin.length === 0 && selected.kcal.length === 0){
-      selected.season.map(function(element){
-        filtered.filter((fruits) => fruits.season === element);
-      });
-    }
-    
-    //origin
-    if(selected.origin.length !== 0){
-      selected.origin.map(function(element){
-        console.log(element, filtered.filter((fruits) => fruits.origin === element));
-      });
-    }
-    
-    //kcal
-    if(selected.kcal.length !== 0){
-      selected.kcal.map(function(element){
-        console.log(element, filtered.filter((fruits) => fruits.kcal === element));
-      });
-    }*/
-    
-    //console.log(filtered);
 
-  }, [selected]);
+
+
+  }, [result]);
+  console.log(selected, result);
 
   return (<div>
       <h1>내가 원하는 과일은?</h1>
-      {setps.map(function(element, index){
+      {steps.map(function(element, index){
         return(<div key={index}>
           <p>{element.name}</p>
           {element.select.kind.map(function(child, childIndex){
@@ -126,7 +106,7 @@ export default function Findex(){
                 if(!clickCategory.includes(targetValue)){
                   //clickCategory 에 없을 때
                   clickCategory.push(targetValue);
-                  console.log(clickCategory, selected);
+                  //console.log(clickCategory, selected);
                 }else {
                   //clickCategory 에 있을 때
                   const findIndex = clickCategory.indexOf(targetValue); //target.value index 확인
@@ -155,27 +135,85 @@ export default function Findex(){
         </div>)
       })}
       <button type="button" onClick={()=>{
-        if(selected.season.length !== 0){
+        result.map(function(element){
+          if(selected[Object.keys(element)].length > 0){
+            console.log("-----------------");
+            selected[Object.keys(element)].map(function(child){
+              const key = Object.keys(element)[0];
+              if(key === "season"){
+                const resultSeason = filtered.filter((fruits) => fruits.season === child);
+                setResult((prev)=>{
+                  const updatedResult = [...prev];
+                  const seasonIndex = updatedResult.findIndex(resultIndex => resultIndex.season);
+                  if (seasonIndex !== -1) {
+                    updatedResult[seasonIndex].season = [
+                      ...new Set([...updatedResult[seasonIndex].season, ...resultSeason])
+                    ];
+                  }
+                  return updatedResult;
+                });
+
+              }else if(key === "origin"){
+                const clickResult = filtered.filter((fruits) => fruits.origin === child);
+                console.log(clickResult);
+              }else if(key === "kcal"){
+                const clickResult = filtered.filter((fruits) => fruits.kcal === child);
+                console.log(clickResult);
+                return [...clickResult];
+              }
+              return [...result];
+            })
+          }
+        });
+        /*if(selected.season.length > 0 && selected.origin.length > 0 && selected.kcal.length > 0){
           const update = selected.season.map(function(element){
             const clickResult = filtered.filter((fruits) => fruits.season === element);
             return [...clickResult];
-          });
-          update.map(function(element, index){
-            console.log(update[0]);
-          });
-          
-          setResult({ season: update[0].concat(update[1]) });
-          console.log("map out: ", update, update.concat(update))
+          }).flat();
+
+
+
+          setResult((prev)=>({ ...prev, season: [...update] }));
+        }else {
+          setResult((prev)=>({ ...prev, season: [] }));
+        }*/
+
+        /*if(selected.origin.length > 0){
+          const update = selected.origin.map(function(element){
+            const clickResult = filtered.filter((fruits) => fruits.origin === element);
+            return [...clickResult];
+          }).flat();
+
+          setResult((prev)=>({ ...prev, origin: [...update] }));
+
+          if(result.season.length > 0){
+            const resultIncludes = result.season.filter((season)=>result.origin.includes(season))
+            setResult((prev)=>({...prev, result:[...resultIncludes]}));
+          }
         }
+        if(selected.kcal.length > 0){
+          const update = selected.kcal.map(function(element){
+            const clickResult = filtered.filter((fruits) => fruits.kcal === element);
+            return [...clickResult];
+          }).flat();
+
+          setResult((prev)=>({ ...prev, kcal: [...update] }));
+          if(result.season.length > 0 && result.origin.length > 0){
+            const resultIncludes = result.season.filter((season)=>result.origin.includes(season) )
+            setResult((prev)=>({...prev, result:[...resultIncludes]}));
+          }
+        }*/
+
+
       }}>결과 확인!</button>
       <hr/>
       <h3>내가 고른 과일은?</h3>
-      <p>
+      {/*<p>
       {result.season.map(function(element, index){
           return (<span key={index}>
             {`${index}. ${element.name} ` }
           </span>)
       })}
-      </p>
+      </p>*/}
   </div>)
 }
